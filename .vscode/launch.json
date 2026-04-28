@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ProteinServer",
+      "request": "launch",
+      "mainClass": "proteinanalysis.api.ProteinServer",
+      "projectName": "ProteinAnalysisApp_f4e2f815"
+    },
+    {
+      "type": "java",
+      "name": "MainApp",
+      "request": "launch",
+      "mainClass": "proteinanalysis.main.MainApp",
+      "projectName": "ProteinAnalysisApp_f4e2f815"
+    },
+    {
+      "type": "java",
+      "name": "Run JavaFX",
+      "request": "launch",
+      "mainClass": "proteinanalysis.main.TestFX",
+      "vmArgs": "--module-path \"C:\\javafx\\javafx-sdk-26\\lib\" --add-modules javafx.controls,javafx.fxml,javafx.web"
+    }
+  ]
+}

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Protein Analysis Dashboard</title>
+
+    <script src="https://unpkg.com/ngl@latest/dist/ngl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        h2 {
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+            background: #1e293b;
+        }
+
+        .container {
+            display: flex;
+            padding: 15px;
+            gap: 15px;
+        }
+
+        .left-panel {
+            width: 25%;
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .right-panel {
+            width: 75%;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        #viewport {
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+        }
+
+        .highlight {
+            background-color: red;
+            color: white;
+            padding: 2px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🧬 Protein Analysis Dashboard</h2>
+
+    <div class="container">
+
+        <div class="left-panel">
+            <div class="card">
+                <h3>Controls</h3>
+
+                <input id="pdbId" placeholder="Enter UniProt OR PDB ID">
+
+                <button onclick="loadProtein()">Analyze Protein</button>
+
+                <label>Representation</label>
+                <select id="style" onchange="applyStyle()">
+                    <option value="cartoon">Cartoon</option>
+                    <option value="ball+stick">Ball & Stick</option>
+                    <option value="surface">Surface</option>
+                </select>
+
+                <label>Color Scheme</label>
+                <select id="color" onchange="applyStyle()">
+                    <option value="chainname">By Chain</option>
+                    <option value="element">By Element</option>
+                    <option value="sstruc">By Secondary Structure</option>
+                </select>
+
+                <label>Highlight Chain</label>
+                <select id="chain" onchange="applyStyle()">
+                    <option value="ALL">All Chains</option>
+                    <option value="A">Chain A</option>
+                    <option value="B">Chain B</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <h3>Mutation Analysis</h3>
+
+                <input id="mutationInput" placeholder="Enter mutation (e.g. E6V)">
+                <button onclick="analyzeMutation()">Analyze Mutation</button>
+                <button onclick="visualizeMutation()">🔍 Visualize Mutation</button>
+
+                <p id="mutationResult"></p>
+            </div>
+        </div>
+
+        <div class="right-panel">
+
+            <div class="card">
+                <div id="viewport"></div>
+            </div>
+
+            <div class="card">
+                <h3>Protein Information</h3>
+                <p id="proteinDetails"></p>
+            </div>
+
+            <div class="card">
+                <h3>Sequence Analysis</h3>
+                <div id="sequenceOutput"></div>
+            </div>
+
+            <div class="card">
+                <h3>Amino Acid Composition</h3>
+                <canvas id="aaChart"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        var stage = new NGL.Stage("viewport");
+        var currentComponent = null;
+        var currentSequence = "";
+        var mutationIndex = -1;
+
+        const aaProperties = {
+            A: "Hydrophobic", V: "Hydrophobic", L: "Hydrophobic",
+            I: "Hydrophobic", M: "Hydrophobic",
+            D: "Negative", E: "Negative",
+            K: "Positive", R: "Positive",
+            S: "Polar", T: "Polar", N: "Polar", Q: "Polar"
+        };
+
+        const mutationDB = {
+            "E6V": {
+                disease: "Sickle Cell Anemia",
+                note: "Classic hemoglobin mutation"
+            },
+            "F508DEL": {
+                disease: "Cystic Fibrosis",
+                note: "Protein misfolding"
+            },
+            "G12D": {
+                disease: "Cancer (KRAS)",
+                note: "Oncogenic mutation"
+            }
+        };
+
+        function loadProtein() {
+            let input = document.getElementById("pdbId").value.trim();
+
+            fetch("http://localhost:8080/protein?id=" + input)
+                .then(res => res.json())
+                .then(data => {
+
+                    currentSequence = data.sequence || "";
+
+                    let counts = {};
+                    for (let aa of currentSequence) {
+                        counts[aa] = (counts[aa] || 0) + 1;
+                    }
+
+                    let compositionText = "";
+                    for (let k in counts) {
+                        compositionText += k + ": " + counts[k] + " ";
+                    }
+
+                    document.getElementById("sequenceOutput").innerHTML =
+                        "<b>Length:</b> " + currentSequence.length + "<br><br>" +
+                        "<b>Composition:</b><br>" + compositionText + "<br><br>" +
+                        "<b>Sequence:</b><br>" + currentSequence;
+
+                    new Chart(document.getElementById("aaChart"), {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(counts),
+                            datasets: [{
+                                label: 'AA Count',
+                                data: Object.values(counts)
+                            }]
+                        }
+                    });
+
+                    if (data.pdb) {
+                        stage.removeAllComponents();
+
+                        stage.loadFile("rcsb://" + data.pdb).then(function (comp) {
+                            currentComponent = comp;
+                            applyStyle();
+                            comp.autoView();
+                        });
+                    }
+
+                    let info = data.info || {};
+
+                    let title = info.struct?.title || "N/A";
+                    let method = info.exptl?.[0]?.method || "N/A";
+                    let resolution = info.rcsb_entry_info?.resolution_combined || "N/A";
+
+                    let organism = "Unknown";
+                    if (info.rcsb_entity_source_organism) {
+                        organism = info.rcsb_entity_source_organism[0].scientific_name;
+                    }
+
+                    let pdb = data.pdb || "";
+
+                    document.getElementById("proteinDetails").innerHTML =
+                        "<b>Title:</b> " + title + "<br><br>" +
+                        "<b>Method:</b> " + method + "<br><br>" +
+                        "<b>Resolution:</b> " + resolution + "<br><br>" +
+                        "<b>Organism:</b> " + organism + "<br><br>" +
+                        "<b>View on RCSB:</b> <a href='https://www.rcsb.org/structure/" + pdb + "' target='_blank'>Open</a><br><br>" +
+                        "<b>Download PDB:</b> <a href='https://files.rcsb.org/download/" + pdb + ".pdb' target='_blank'>Download</a>";
+                });
+        }
+
+        function applyStyle() {
+            if (!currentComponent) return;
+
+            let style = document.getElementById("style").value;
+            let color = document.getElementById("color").value;
+            let chain = document.getElementById("chain").value;
+
+            currentComponent.removeAllRepresentations();
+
+            let sele = (chain === "ALL") ? "" : ":" + chain;
+
+            currentComponent.addRepresentation(style, {
+                sele: sele,
+                colorScheme: color
+            });
+        }
+
+        function analyzeMutation() {
+            let mutation = document.getElementById("mutationInput").value.toUpperCase();
+
+            let original = mutation[0];
+            let position = parseInt(mutation.slice(1, -1));
+            let newAA = mutation.slice(-1);
+
+            mutationIndex = position - 1;
+
+            let propertyChange =
+                (aaProperties[original] || "Unknown") +
+                " → " +
+                (aaProperties[newAA] || "Unknown");
+
+            let diseaseInfo = mutationDB[mutation] || {
+                disease: "Unknown",
+                note: "No database match"
+            };
+
+            document.getElementById("mutationResult").innerText =
+                "Mutation: " + original + " → " + newAA + "\n" +
+                "Biochemical: " + propertyChange + "\n" +
+                "Disease: " + diseaseInfo.disease + "\n" +
+                "Note: " + diseaseInfo.note;
+
+            highlightSequence();
+        }
+
+        function visualizeMutation() {
+            if (mutationIndex === -1 || !currentComponent) return;
+
+            let sele = "" + (mutationIndex + 1);
+
+            currentComponent.removeAllRepresentations();
+
+            currentComponent.addRepresentation("cartoon", {
+                colorScheme: "chainname",
+                opacity: 0.3
+            });
+
+            currentComponent.addRepresentation("ball+stick", {
+                sele: sele,
+                color: "red",
+                scale: 5
+            });
+
+            currentComponent.addRepresentation("spacefill", {
+                sele: sele,
+                color: "yellow",
+                scale: 1.5,
+                opacity: 0.6
+            });
+
+            currentComponent.addRepresentation("label", {
+                sele: sele,
+                labelType: "residue",
+                color: "white",
+                scale: 2
+            });
+
+            stage.autoView(sele);
+            highlightSequence();
+        }
+
+        function highlightSequence() {
+            let html = "<b>Sequence:</b><br>";
+
+            for (let i = 0; i < currentSequence.length; i++) {
+                if (i === mutationIndex) {
+                    html += "<span class='highlight'>" + currentSequence[i] + "</span>";
+                } else {
+                    html += currentSequence[i];
+                }
+            }
+
+            document.getElementById("sequenceOutput").innerHTML = html;
+        }
+    </script>
+
+</body>
+
+</html>
