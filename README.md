@@ -66,9 +66,9 @@ Demo Inputs: (Try these examples)
 
 Protein     Hemoglobin  CFTR
 
-ID          P69905    P13569
+ID           P69905    P13569
 
-Mutation    P13569    F508DEL
+Mutation     P13569    F508DEL
       
 Notes
 - Disease mapping is demo-based (hardcoded) for selected mutations
