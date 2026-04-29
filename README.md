@@ -1,5 +1,6 @@
 **Protein Analysis Dashboard**
 The Protein Analysis Dashboard is a full-stack web application that enables users to analyze protein sequences and visualize their 3D structures interactively.
+
 Users can input a UniProt ID or PDB ID to:
 - Fetch protein data using **UniProt / PDB IDs**
 - Visualize protein structures in **interactive 3D**
@@ -20,7 +21,7 @@ Protein Analysis
 - Color schemes (chain, element, structure)
 
 Mutation Analysis
-- Input mutations (e.g., `E6V`, `G12D`)
+- Input mutations (e.g :E6V)
 - Displays:
   - Amino acid change
   - Biochemical property change
@@ -61,10 +62,10 @@ Run Frontend
 Open frontend/index.html in browser
 
 Demo Inputs: (Try these examples)
-Protein        ID      Mutation
-Hemoglobin   P69905     E6V
-CFTR         P13569    F508DEL
-
+Protein    Hemoglobin  CFTR
+ID          P69905    P13569
+Mutation    P13569    F508DEL
+      
 Notes
 - Disease mapping is demo-based (hardcoded) for selected mutations
 - Supports both UniProt IDs and PDB IDs
