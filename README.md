@@ -68,7 +68,7 @@ Protein     Hemoglobin  CFTR
 
 ID           P69905    P13569
 
-Mutation     P13569    F508DEL
+Mutation     E6V    F508DEL
       
 Notes
 - Disease mapping is demo-based (hardcoded) for selected mutations
