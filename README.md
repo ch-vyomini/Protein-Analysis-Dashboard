@@ -54,17 +54,19 @@ Sequence Analysis
 - **RCSB PDB API** → Fetch structure and metadata
 
 ⚙️ How to Run the Project:
-- Compile Backend
+- Compile Backend:
 javac -d bin src/proteinanalysis/api/*.java
-- Run Server
+- Run Server:
 java -cp bin proteinanalysis.api.ProteinServer
 
-Run Frontend
+Run Frontend:
 Open frontend/index.html in browser
 
 Demo Inputs: (Try these examples)
 Protein    Hemoglobin  CFTR
+
 ID          P69905    P13569
+
 Mutation    P13569    F508DEL
       
 Notes
