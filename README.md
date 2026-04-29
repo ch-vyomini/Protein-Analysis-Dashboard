@@ -55,15 +55,16 @@ Sequence Analysis
 
 ⚙️ How to Run the Project:
 - Compile Backend:
-javac -d bin src/proteinanalysis/api/*.java
+ javac -d bin src/proteinanalysis/api/*.java
 - Run Server:
-java -cp bin proteinanalysis.api.ProteinServer
+ java -cp bin proteinanalysis.api.ProteinServer
 
 Run Frontend:
-Open frontend/index.html in browser
+ Open frontend/index.html in browser
 
 Demo Inputs: (Try these examples)
-Protein    Hemoglobin  CFTR
+
+Protein     Hemoglobin  CFTR
 
 ID          P69905    P13569
 
