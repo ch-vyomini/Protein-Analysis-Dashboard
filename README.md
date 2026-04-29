@@ -38,6 +38,7 @@ Sequence Analysis
 - Amino acid composition chart (Chart.js)
 
 **Project Architecture and Tech Stack**
+
 🔹 Frontend:
 - HTML → Structure of the web page  
 - CSS → UI Design (Styling)  
